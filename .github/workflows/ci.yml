@@ -54,7 +54,13 @@ jobs:
           cd ../wallets && bun run prisma:generate
 
       - name: Start Docker Compose
-        run: docker compose up --build -d
+        run: |
+          for attempt in 1 2 3; do
+            docker compose up --build -d && break
+            echo "Attempt $attempt failed, retrying in 10s..."
+            docker compose down 2>/dev/null || true
+            sleep 10
+          done
 
       - name: Wait for services to be healthy
         run: |
