@@ -1,8 +1,8 @@
 FROM oven/bun:1-alpine AS builder
 WORKDIR /app
 
-# Copy root and all workspace package.json files
-COPY package.json ./
+# Copy root and all workspace package.json files + lockfile
+COPY package.json bun.lock ./
 COPY packages/contracts/package.json ./packages/contracts/package.json
 COPY services/games/package.json ./services/games/package.json
 COPY services/wallets/package.json ./services/wallets/package.json
@@ -15,8 +15,8 @@ RUN bun install
 COPY packages/contracts ./packages/contracts
 COPY frontend ./frontend
 
-# Build frontend
-RUN cd frontend && bun run build
+# Build frontend (use bunx to ensure binaries resolve from workspace root)
+RUN cd frontend && bunx tsc && bunx vite build
 
 FROM nginx:alpine
 COPY --from=builder /app/frontend/dist /usr/share/nginx/html
