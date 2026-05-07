@@ -66,9 +66,9 @@ jobs:
         run: |
           echo "Waiting for services via HTTP health checks..."
           for i in $(seq 1 90); do
-            GAMES=$(curl -sf http://localhost:8000/games/health 2>/dev/null && echo "ok" || echo "")
-            WALLETS=$(curl -sf http://localhost:8000/wallets/health 2>/dev/null && echo "ok" || echo "")
-            FRONTEND=$(curl -sf http://localhost:3000 2>/dev/null && echo "ok" || echo "")
+            GAMES=$(curl -sf -o /dev/null http://localhost:8000/games/health 2>/dev/null && echo "ok" || echo "")
+            WALLETS=$(curl -sf -o /dev/null http://localhost:8000/wallets/health 2>/dev/null && echo "ok" || echo "")
+            FRONTEND=$(curl -sf -o /dev/null http://localhost:3000 2>/dev/null && echo "ok" || echo "")
             if [ "$GAMES" = "ok" ] && [ "$WALLETS" = "ok" ] && [ "$FRONTEND" = "ok" ]; then
               echo "All services healthy!"
               break
