@@ -100,4 +100,5 @@ jobs:
           bun test tests/e2e
 
       - name: Tear down
+        if: always()
         run: docker compose down
