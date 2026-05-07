@@ -1,0 +1,63 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Environment
+.env
+!.env.example
+
+# Build output
+dist/
+.vite/
+build/
+
+# Bun lockfile - keep for reproducibility
+# bun.lockb
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Test coverage
+coverage/
+
+# Docker volumes
+volumes/
+*.volume
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+
+# Cache
+.cache/
+.eslintcache
+.stylelintcache
+.parcel-cache
+
+# Prisma generated (only in dev, generated in container)
+# prisma/generated/
+
+# Misc
+*.pid
+*.seed
+*.pid.lock
