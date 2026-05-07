@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Generate Prisma clients
+        run: |
+          cd services/games && bun run prisma:generate
+          cd ../wallets && bun run prisma:generate
+
+      - name: Run contracts tests
+        run: cd packages/contracts && bun test
+
+      - name: Run wallets unit tests
+        run: cd services/wallets && bun test tests/unit
+
+      - name: Run games unit tests
+        run: cd services/games && bun test tests/unit
+
+      - name: Run frontend tests
+        run: cd frontend && bun test
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Start Docker Compose
+        run: docker compose up --build -d
+
+      - name: Wait for services to be healthy
+        run: |
+          echo "Waiting for services..."
+          for i in $(seq 1 60); do
+            GAMES=$(docker compose ps games --format '{{.Health}}' 2>/dev/null)
+            WALLETS=$(docker compose ps wallets --format '{{.Health}}' 2>/dev/null)
+            KONG=$(docker compose ps kong --format '{{.Health}}' 2>/dev/null)
+            if [ "$GAMES" = "healthy" ] && [ "$WALLETS" = "healthy" ] && [ "$KONG" = "healthy" ]; then
+              echo "All services healthy!"
+              break
+            fi
+            echo "Attempt $i: games=$GAMES wallets=$WALLETS kong=$KONG"
+            sleep 5
+          done
+
+      - name: Health check - Games
+        run: curl -sf http://localhost:8000/games/health
+
+      - name: Health check - Wallets
+        run: curl -sf http://localhost:8000/wallets/health
+
+      - name: Health check - Frontend
+        run: curl -sf http://localhost:3000
+
+      - name: Run Games E2E tests
+        run: |
+          cd services/games
+          DATABASE_URL=postgresql://admin:admin@localhost:5432/games \
+          RABBITMQ_URL=amqp://admin:admin@localhost:5672 \
+          KEYCLOAK_URL=http://localhost:8080 \
+          KEYCLOAK_REALM=crash-game \
+          bun test tests/e2e
+
+      - name: Run Wallets E2E tests
+        run: |
+          cd services/wallets
+          DATABASE_URL=postgresql://admin:admin@localhost:5432/wallets \
+          RABBITMQ_URL=amqp://admin:admin@localhost:5672 \
+          KEYCLOAK_URL=http://localhost:8080 \
+          KEYCLOAK_REALM=crash-game \
+          bun test tests/e2e
+
+      - name: Tear down
+        run: docker compose down
