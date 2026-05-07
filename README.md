@@ -221,12 +221,12 @@ cd services/wallets && bun run test:e2e
 
 | Simplificado | Em produção |
 |-------------|-------------|
-| **WebSocket via Kong** | Funciona, mas adiciona um hop. Avaliar conexão direta ao Game Service para latência mínima. |
-| **Outbox Pattern** | Publicação direta. Produção usaria tabela outbox + worker. |
-| **Saga Pattern** | Sem compensação automática de transações distribuídas. |
-| **Client Seed** | Fixo em `default-client-seed`. Jogador poderia escolher o próprio. |
-| **Observabilidade** | Sem Prometheus/Grafana. |
-| **Testes E2E** | Testes de API com mocks. Playwright no browser seria o próximo passo. |
+| **WebSocket via Kong** | Funciona e mantém a arquitetura atrás do gateway, mas adiciona um hop. Em produção, a decisão dependeria de latência, escala e estratégia de proxy. |
+| **Outbox/Inbox transacional** | A entrega usa RabbitMQ com idempotência e transações no banco. Em produção, uma tabela outbox/inbox reduziria risco de inconsistência entre commit no banco e publicação de evento. |
+| **Saga simplificada** | O fluxo Game ↔ Wallet usa eventos assíncronos, estados transacionais e idempotência. Em produção, evoluiria para compensações automáticas, DLQ e reconciliação. |
+| **Client Seed** | O crash point é verificável por HMAC, serverSeed, serverSeedHash e nonce. Em produção, o jogador poderia configurar seu próprio clientSeed. |
+| **Observabilidade** | Logs e healthchecks são suficientes para o desafio. Em produção, adicionaria OpenTelemetry, Prometheus e Grafana. |
+| **E2E de navegador** | A entrega cobre testes unitários e E2E de API. Fluxos completos no browser com Playwright ficam como evolução. |
 
 ## Bônus Implementados
 
