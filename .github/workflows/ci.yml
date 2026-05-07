@@ -64,27 +64,22 @@ jobs:
 
       - name: Wait for services to be healthy
         run: |
-          echo "Waiting for services..."
-          for i in $(seq 1 60); do
-            GAMES=$(docker compose ps games --format '{{.Health}}' 2>/dev/null)
-            WALLETS=$(docker compose ps wallets --format '{{.Health}}' 2>/dev/null)
-            KONG=$(docker compose ps kong --format '{{.Health}}' 2>/dev/null)
-            if [ "$GAMES" = "healthy" ] && [ "$WALLETS" = "healthy" ] && [ "$KONG" = "healthy" ]; then
+          echo "Waiting for services via HTTP health checks..."
+          for i in $(seq 1 90); do
+            GAMES=$(curl -sf -o /dev/null http://localhost:8000/games/health 2>/dev/null && echo "ok" || echo "")
+            WALLETS=$(curl -sf -o /dev/null http://localhost:8000/wallets/health 2>/dev/null && echo "ok" || echo "")
+            FRONTEND=$(curl -sf -o /dev/null http://localhost:3000 2>/dev/null && echo "ok" || echo "")
+            if [ "$GAMES" = "ok" ] && [ "$WALLETS" = "ok" ] && [ "$FRONTEND" = "ok" ]; then
               echo "All services healthy!"
               break
             fi
-            echo "Attempt $i: games=$GAMES wallets=$WALLETS kong=$KONG"
+            echo "Attempt $i/90: games=$GAMES wallets=$WALLETS frontend=$FRONTEND"
             sleep 5
           done
-
-      - name: Health check - Games
-        run: curl -sf http://localhost:8000/games/health
-
-      - name: Health check - Wallets
-        run: curl -sf http://localhost:8000/wallets/health
-
-      - name: Health check - Frontend
-        run: curl -sf http://localhost:3000
+          curl -sf http://localhost:8000/games/health || (echo "Games health check failed" && exit 1)
+          curl -sf http://localhost:8000/wallets/health || (echo "Wallets health check failed" && exit 1)
+          curl -sf http://localhost:3000 || (echo "Frontend health check failed" && exit 1)
+          echo "All health checks passed!"
 
       - name: Run Games E2E tests
         run: |
