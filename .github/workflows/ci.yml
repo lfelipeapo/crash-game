@@ -45,6 +45,14 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Install dependencies
+        run: bun install
+
+      - name: Generate Prisma clients
+        run: |
+          cd services/games && bun run prisma:generate
+          cd ../wallets && bun run prisma:generate
+
       - name: Start Docker Compose
         run: docker compose up --build -d
 
