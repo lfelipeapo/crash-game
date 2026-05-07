@@ -1,0 +1,55 @@
+_format_version: "3.0"
+
+# Kong routes /games and /wallets to the respective services.
+# With strip_path: true, the path prefix is removed before forwarding.
+#
+# External -> Kong -> Internal (Game Service)
+#   /games/health           -> GET  /health
+#   /games/rounds/current   -> GET  /rounds/current
+#   /games/rounds/history   -> GET  /rounds/history
+#   /games/rounds/:id/verify-> GET  /rounds/:id/verify
+#   /games/bets/me          -> GET  /bets/me
+#   /games/bet              -> POST /bet
+#   /games/bet/cashout      -> POST /bet/cashout
+#   /games/leaderboard      -> GET  /leaderboard
+#   /games/socket.io/       -> WS   /socket.io/   (WebSocket via Kong)
+#
+# External -> Kong -> Internal (Wallet Service)
+#   /wallets/health         -> GET  /health
+#   /wallets                -> POST /
+#   /wallets/me             -> GET  /me
+
+services:
+  - name: games-service
+    url: http://games:4001
+    routes:
+      - name: games-routes
+        paths:
+          - /games
+        strip_path: true
+
+  - name: wallets-service
+    url: http://wallets:4002
+    routes:
+      - name: wallets-routes
+        paths:
+          - /wallets
+        strip_path: true
+
+plugins:
+  - name: cors
+    config:
+      origins:
+        - "http://localhost:3000"
+      methods:
+        - GET
+        - POST
+        - OPTIONS
+      headers:
+        - Authorization
+        - Content-Type
+        - X-Request-Id
+      exposed_headers:
+        - X-Request-Id
+      max_age: 3600
+      credentials: true
