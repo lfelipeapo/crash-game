@@ -1,0 +1,38 @@
+{
+  "name": "@crash/games",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "bun run --watch src/main.ts",
+    "start": "bun run src/main.ts",
+    "test": "bun test tests/unit",
+    "test:e2e": "bun test tests/e2e",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate deploy"
+  },
+  "dependencies": {
+    "@crash/contracts": "workspace:*",
+    "@nestjs/common": "^11.1.17",
+    "@nestjs/core": "^11.1.17",
+    "@nestjs/platform-express": "^11.1.17",
+    "@nestjs/platform-socket.io": "^11.1.17",
+    "@nestjs/websockets": "^11.1.17",
+    "@nestjs/swagger": "^11.0.0",
+    "@nestjs/throttler": "^6.0.0",
+    "@prisma/client": "^6.6.0",
+    "amqplib": "^0.10.5",
+    "jose": "^6.0.10",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "socket.io": "^4.8.1",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.7",
+    "@types/uuid": "^10.0.0",
+    "bun-types": "latest",
+    "prisma": "^6.6.0",
+    "typescript": "^5.8.3",
+    "@nestjs/testing": "^11.1.17"
+  }
+}
