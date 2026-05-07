@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Environment
+.env
+!.env.example
+
+# Build output
+dist/
+.vite/
+
+# OS
+.DS_Store
+
+# Logs
+*.log
